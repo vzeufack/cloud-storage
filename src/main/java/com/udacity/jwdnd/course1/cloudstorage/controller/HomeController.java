@@ -50,55 +50,76 @@ public class HomeController {
     }
 
     @PostMapping("/note")
-    public String createNote(Authentication authentication, Model model, Note note){
-        Integer userId = userService.getUser(authentication.getName()).getUserId();
-        note.setUserId(userId);
-        if(note.getNoteId() == null)
-            noteService.save(note);
-        else
-            noteService.update(note);
-        model.addAttribute("notes", noteService.getNotes(userId));
+    public String createNote(Authentication authentication, ModelMap model, Note note, RedirectAttributes redirectAttributes){
+        try {
+            Integer userId = userService.getUser(authentication.getName()).getUserId();
+            note.setUserId(userId);
+            if (note.getNoteId() == null) {
+                noteService.save(note);
+                redirectAttributes.addFlashAttribute("noteSuccessMsg", "Note successfully created");
+            } else {
+                noteService.update(note);
+                redirectAttributes.addFlashAttribute("noteSuccessMsg", "Note successfully edited");
+            }
+            model.addAttribute("notes", noteService.getNotes(userId));
+        }
+        catch (Exception e){
+            redirectAttributes.addFlashAttribute("noteErrorMsg", "There was an error was creating or editing the note");
+        }
+
         return "redirect:/home#nav-notes";
     }
 
     @RequestMapping("/note/delete/{noteId}")
-    public String deleteNote(@PathVariable Integer noteId){
+    public String deleteNote(@PathVariable Integer noteId, RedirectAttributes redirectAttributes){
         noteService.delete(noteId);
+        redirectAttributes.addFlashAttribute("noteDeleteMsg", "Note was successfully deleted");
         return "redirect:/home#nav-notes";
     }
 
     @PostMapping("/credential")
-    public String createCredential(Authentication authentication, Model model, Credential credential){
-        Integer userId = userService.getUser(authentication.getName()).getUserId();
-        credential.setUserId(userId);
-        if(credential.getCredentialId() == null)
-            credentialService.save(credential);
-        else
-            credentialService.update(credential);
-        model.addAttribute("credentials", credentialService.getCredentials(userId));
+    public String createCredential(Authentication authentication, Model model, Credential credential, RedirectAttributes redirectAttributes){
+        try {
+            Integer userId = userService.getUser(authentication.getName()).getUserId();
+            credential.setUserId(userId);
+            if (credential.getCredentialId() == null) {
+                credentialService.save(credential);
+                redirectAttributes.addFlashAttribute("credentialSuccessMsg", "Credential successfully created");
+            } else {
+                credentialService.update(credential);
+                redirectAttributes.addFlashAttribute("credentialSuccessMsg", "Credential successfully edited");
+            }
+            model.addAttribute("credentials", credentialService.getCredentials(userId));
+        }
+        catch (Exception e){
+            redirectAttributes.addFlashAttribute("credentialErrorMsg", "There was an error was creating or editing the credential");
+            redirectAttributes.addFlashAttribute("credentialErrorMsg", "There was an error was creating or editing the credential");
+        }
+
         return "redirect:/home#nav-credentials";
     }
 
     @RequestMapping("/credential/delete/{credentialId}")
-    public String deleteCredential(@PathVariable Integer credentialId){
+    public String deleteCredential(@PathVariable Integer credentialId, RedirectAttributes redirectAttributes){
         credentialService.delete(credentialId);
+        redirectAttributes.addFlashAttribute("credentialDeleteMsg", "Credential was successfully deleted");
         return "redirect:/home#nav-credentials";
     }
 
     @PostMapping("/file/upload")
-    public String uploadFile(Authentication authentication, @RequestParam("file") MultipartFile file, Model model, RedirectAttributes redirectAttributes){
+    public String uploadFile(Authentication authentication, @RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes){
         if (file.isEmpty()) {
-            redirectAttributes.addFlashAttribute("message", "Please select a file to upload.");
+            redirectAttributes.addFlashAttribute("message", "Please select a file to upload");
             return "redirect:/home";
         }
 
         try{
             Integer userId = userService.getUser(authentication.getName()).getUserId();
             fileService.save(file, userId);
-            redirectAttributes.addFlashAttribute("message", "File uploaded successfully");
+            redirectAttributes.addFlashAttribute("fileSuccessMsg", "File uploaded successfully");
         }
         catch(IOException e){
-            redirectAttributes.addFlashAttribute("message", e.getMessage());
+            redirectAttributes.addFlashAttribute("fileErrorMsg", e.getMessage());
         }
 
         return "redirect:/home";
@@ -116,8 +137,9 @@ public class HomeController {
     }
 
     @RequestMapping("/file/delete/{id}")
-    public String deleteFile(@PathVariable Integer id){
+    public String deleteFile(@PathVariable Integer id, RedirectAttributes redirectAttributes){
         fileService.delete(id);
+        redirectAttributes.addFlashAttribute("fileDeleteMsg", "File deleted successfully");
         return "redirect:/home#nav-files";
     }
 }

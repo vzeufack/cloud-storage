@@ -79,9 +79,7 @@ class CloudStorageApplicationTests {
 	public void testSignupLoginLogout(){
 		driver.get("http://localhost:" + port + "/signup");
 		signupPage = new SignupPage(driver);
-		signupPage.signup("John", "Doe", "jdoe", "test");
-		loginPage = new LoginPage(driver);
-		loginPage.login("jdoe", "test");
+		signupAndLogin("John", "Doe", "jdoe", "test");
 		Assertions.assertEquals("Home", driver.getTitle());
 		driver.get("http://localhost:" + port + "/logout");
 		driver.get("http://localhost:" + port + "/home");
@@ -197,8 +195,7 @@ class CloudStorageApplicationTests {
 	@Test
 	public void testBadUrl() {
 		// Create a test account
-		doMockSignUp("URL","Test","UT","123");
-		doLogIn("UT", "123");
+		signupAndLogin("URL","Test","UT","123");
 		
 		// Try to access a random made-up URL.
 		driver.get("http://localhost:" + this.port + "/some-random-page");
@@ -221,8 +218,7 @@ class CloudStorageApplicationTests {
 	@Test
 	public void testLargeUpload() {
 		// Create a test account
-		doMockSignUp("Large File","Test","LFT","123");
-		doLogIn("LFT", "123");
+		signupAndLogin("Large File","Test","LFT","123");
 
 		// Try to upload an arbitrary large file
 		WebDriverWait webDriverWait = new WebDriverWait(driver, Duration.ofSeconds(2));
